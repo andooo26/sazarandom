@@ -1,0 +1,138 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  display: flex;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
+  background: radial-gradient(circle at 50% 30%, #2b2b5e 0%, #14142b 70%);
+  color: #fff;
+  overflow: hidden;
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+  padding: 32px;
+}
+
+.heading {
+  margin: 0;
+  font-size: 28px;
+  letter-spacing: 0.08em;
+  opacity: 0.9;
+}
+
+.slot {
+  width: min(80vw, 900px);
+  padding: 48px 24px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12), 0 24px 60px rgba(0, 0, 0, 0.45);
+  text-align: center;
+}
+
+.display {
+  font-size: clamp(32px, 7vw, 96px);
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+.display.roster {
+  font-size: clamp(18px, 2.4vw, 30px);
+  font-weight: 600;
+  line-height: 1.8;
+  opacity: 0.85;
+  white-space: normal;
+}
+
+.display.spinning {
+  filter: blur(1px);
+  opacity: 0.85;
+}
+
+.display.winner {
+  animation: pop 0.5s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.controls {
+  display: flex;
+  gap: 16px;
+}
+
+.btn {
+  padding: 14px 28px;
+  border: none;
+  border-radius: 999px;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transition: transform 0.1s ease, background 0.15s ease;
+}
+
+.btn:hover { background: rgba(255, 255, 255, 0.24); }
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn.primary {
+  background: #ff5c8a;
+}
+.btn.primary:hover { background: #ff3d73; }
+
+.remaining {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.sidebar {
+  width: 440px;
+  height: 100%;
+  padding: 32px;
+  background: rgba(0, 0, 0, 0.25);
+  overflow-y: auto;
+}
+
+.sidebar-title {
+  margin: 0 0 20px;
+  font-size: 22px;
+  opacity: 0.9;
+}
+
+.order {
+  margin: 0;
+  padding-left: 36px;
+  font-size: 30px;
+  line-height: 2.2;
+}
+
+.order li {
+  padding-left: 10px;
+  animation: slidein 0.4s ease;
+}
+
+@keyframes slidein {
+  from { opacity: 0; transform: translateX(12px); }
+  to { opacity: 1; transform: translateX(0); }
+}

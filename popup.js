@@ -1,64 +1,66 @@
-// ポップアップのロジック
-// 開いている Google Drive のフォルダ画面からファイル名を読み取り、
-// 「xxx-xx名前」(例: NF1-13黒宮朝大) を抽出して発表順をシャッフルする。
+// ポップアップ
 
 const button = document.getElementById("action-btn");
 const status = document.getElementById("status");
 const result = document.getElementById("result");
 
-// Drive のタブに注入してファイル名一覧を返す関数。
-// DOM 構造が変わる可能性があるため複数のセレクタでフォールバックする。
-function scrapeFileNames() {
-  const names = new Set();
+// Driveのタブに注入して {name, id} の一覧を返す関数
+function scrapeFiles() {
+  const files = [];
 
-  const pushName = (raw) => {
-    if (typeof raw !== "string") return;
-    const name = raw.trim();
-    if (name) names.add(name);
-  };
-
-  // 各ファイル行からファイル名を取得する。
   const rows = document.querySelectorAll('[role="row"][data-id]');
   rows.forEach((row) => {
+    const id = row.getAttribute("data-id");
+    if (!id) return;
+
+    let name = "";
     // 1) ファイル名そのものを持つ要素
     const strong = row.querySelector("strong.DNoYtb, .WQJtxb");
     if (strong && strong.textContent) {
-      pushName(strong.textContent);
-      return;
+      name = strong.textContent.trim();
+    } else {
+      // 2) data-tooltip からの抽出
+      const tip = row.querySelector("[data-tooltip]");
+      if (tip) name = (tip.getAttribute("data-tooltip") || "").trim();
     }
-    // 2) data-tooltip / aria-label からの抽出 (末尾の種類表記を落とす)
-    const tip = row.querySelector("[data-tooltip]");
-    if (tip) pushName(tip.getAttribute("data-tooltip"));
+
+    // ファイル種別 (アイコンの <title> 例: "Microsoft PowerPoint" "Google Slides")
+    const titleEl = row.querySelector("svg title");
+    const type = titleEl && titleEl.textContent ? titleEl.textContent.trim() : "";
+
+    if (name) files.push({ name, id, type });
   });
 
-  return Array.from(names);
+  return files;
 }
 
-// ファイル名から「xxx-xx名前」部分を取り出す。
-// 例: "NF1-13黒宮朝大_2026年..." -> "NF1-13黒宮朝大"
-//     "ST2-05小川倖輝_ST2_..."  -> "ST2-05小川倖輝"
-function extractKey(fileName) {
-  const m = fileName.match(/^[A-Za-z]+\d*-\d+[^_．.\s（(]+/);
-  return m ? m[0] : null;
-}
-
-// Fisher-Yates シャッフル
-function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+// 種別に応じて「そのまま発表/編集できる」URLを組み立てる
+function buildUrl(type, id) {
+  const t = (type || "").toLowerCase();
+  if (t.includes("powerpoint") || t.includes("slides")) {
+    return `https://docs.google.com/presentation/d/${id}/edit`;
   }
-  return a;
+  if (t.includes("word") || t.includes("docs")) {
+    return `https://docs.google.com/document/d/${id}/edit`;
+  }
+  if (t.includes("excel") || t.includes("sheets")) {
+    return `https://docs.google.com/spreadsheets/d/${id}/edit`;
+  }
+  if (t.includes("pdf")) {
+    // 拡張内のビューアでデータを取得し、Chrome内蔵PDFビューアで表示する
+    return `${chrome.runtime.getURL("pdf.html")}?id=${id}`;
+  }
+  // 画像・動画・テキストなどはファイル単体ビューで開く
+  return `https://drive.google.com/file/d/${id}/view`;
 }
 
-function render(order) {
-  result.innerHTML = "";
-  order.forEach((name) => {
-    const li = document.createElement("li");
-    li.textContent = name;
-    result.appendChild(li);
-  });
+function extractKey(fileName) {
+  // 最初の "_" までを名前として扱う。
+  // 例: "NT1-1安藤 陽太_元ファイル名.pptx" -> "NT1-1安藤 陽太"
+  let name = fileName.split("_")[0];
+  // "_" が無く拡張子が残った場合は除去 (例: "NT1-1安藤 陽太.pptx")
+  name = name.replace(/\.[A-Za-z0-9]+$/, "").trim();
+  return name || null;
 }
 
 button.addEventListener("click", async () => {
@@ -73,23 +75,32 @@ button.addEventListener("click", async () => {
       return;
     }
 
-    const [{ result: fileNames }] = await chrome.scripting.executeScript({
+    const [{ result: files }] = await chrome.scripting.executeScript({
+
       target: { tabId: tab.id },
-      func: scrapeFileNames,
+      func: scrapeFiles,
     });
 
-    // 抽出 + 重複除去 (1人1エントリ)
-    const keys = Array.from(
-      new Set((fileNames || []).map(extractKey).filter(Boolean))
-    );
+    // 抽出 + 重複除去 (1人1エントリ、最初のファイルを採用)
+    const seen = new Set();
+    const candidates = [];
+    (files || []).forEach((f) => {
+      const key = extractKey(f.name);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      candidates.push({ key, url: buildUrl(f.type, f.id) });
+    });
 
-    if (keys.length === 0) {
+    if (candidates.length === 0) {
       status.textContent = "対象のファイル名が見つかりませんでした";
       return;
     }
 
-    status.textContent = `${keys.length}人で抽選しました`;
-    render(shuffle(keys));
+    // 候補を保存してルーレット用の新しいタブを開く
+    await chrome.storage.local.set({ candidates, createdAt: Date.now() });
+    await chrome.tabs.create({ url: chrome.runtime.getURL("roulette.html") });
+
+    status.textContent = `${candidates.length}人でルーレットを開きました`;
   } catch (e) {
     status.textContent = "エラー: " + (e && e.message ? e.message : e);
   }

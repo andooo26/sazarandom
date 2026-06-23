@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="roulette.css" />
+  <title>さざらんだむ</title>
+</head>
+<body>
+  <div class="stage">
+    <h1 class="heading">さざらんだむ</h1>
+
+    <div class="slot">
+      <div id="display" class="display">準備中...</div>
+    </div>
+
+    <div class="controls">
+      <button id="draw-btn" class="btn primary" type="button">スタート</button>
+      <button id="open-btn" class="btn" type="button" hidden>ファイルを開く</button>
+      <button id="reset-btn" class="btn" type="button">リセット</button>
+    </div>
+
+    <p id="remaining" class="remaining"></p>
+  </div>
+
+  <aside class="sidebar">
+    <h2 class="sidebar-title">発表順</h2>
+    <ol id="order" class="order"></ol>
+  </aside>
+
+  <script src="roulette.js"></script>
+</body>
+</html>

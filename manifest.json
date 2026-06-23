@@ -7,6 +7,9 @@
     "default_popup": "popup.html",
     "default_title": "Saza Random"
   },
-  "permissions": ["activeTab", "scripting"],
-  "host_permissions": ["https://drive.google.com/*"]
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://drive.google.com/*",
+    "https://drive.usercontent.google.com/*"
+  ]
 }
