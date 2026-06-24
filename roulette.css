@@ -10,9 +10,28 @@ html, body {
 body {
   display: flex;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", sans-serif;
-  background: radial-gradient(circle at 50% 30%, #2b2b5e 0%, #14142b 70%);
-  color: #fff;
+  background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 25%, #a1c4fd 60%, #c2e9fb 100%);
+  background-attachment: fixed;
+  color: #2b2b4a;
   overflow: hidden;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255, 214, 0, 0.45) 0%, transparent 25%),
+    radial-gradient(circle at 85% 25%, rgba(255, 92, 138, 0.4) 0%, transparent 28%),
+    radial-gradient(circle at 25% 85%, rgba(98, 216, 196, 0.4) 0%, transparent 28%),
+    radial-gradient(circle at 80% 80%, rgba(124, 132, 255, 0.4) 0%, transparent 28%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.stage, .sidebar {
+  position: relative;
+  z-index: 1;
 }
 
 .stage {
@@ -36,8 +55,8 @@ body {
   width: min(80vw, 900px);
   padding: 48px 24px;
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12), 0 24px 60px rgba(0, 0, 0, 0.45);
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.6), 0 24px 60px rgba(124, 132, 255, 0.35);
   text-align: center;
 }
 
@@ -48,7 +67,8 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+  color: #ff3d73;
+  text-shadow: 0 4px 18px rgba(255, 92, 138, 0.3);
 }
 
 .display.roster {
@@ -86,17 +106,19 @@ body {
   font-size: 18px;
   font-weight: 700;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: rgba(255, 255, 255, 0.8);
+  color: #5a4bff;
+  box-shadow: 0 6px 16px rgba(124, 132, 255, 0.25);
   transition: transform 0.1s ease, background 0.15s ease;
 }
 
-.btn:hover { background: rgba(255, 255, 255, 0.24); }
+.btn:hover { background: #fff; }
 .btn:active { transform: scale(0.96); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .btn.primary {
   background: #ff5c8a;
+  color: #fff;
 }
 .btn.primary:hover { background: #ff3d73; }
 
@@ -110,7 +132,8 @@ body {
   width: 440px;
   height: 100%;
   padding: 32px;
-  background: rgba(0, 0, 0, 0.25);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(8px);
   overflow-y: auto;
 }
 
